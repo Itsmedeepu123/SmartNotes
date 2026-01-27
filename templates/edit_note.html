@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial; margin:30px;">
+  <h2>Edit Note</h2>
+
+  <form method="post" action="/edit-note/{{ note._id }}">
+    <input name="title" value="{{ note.title }}" required style="width:400px; padding:8px;"><br><br>
+
+    <textarea name="content" required style="width:400px; height:120px; padding:8px;">{{ note.content }}</textarea><br><br>
+
+    <input name="tags" value="{{ ', '.join(note.tags) if note.tags else '' }}" placeholder="Tags (comma separated)" style="width:400px; padding:8px;"><br><br>
+
+    <input name="category" value="{{ note.category if note.category else '' }}" placeholder="Category" style="width:400px; padding:8px;"><br><br>
+
+    <button type="submit">Update</button>
+  </form>
+
+  <p><a href="/dashboard">Back</a></p>
+</body>
+</html>
