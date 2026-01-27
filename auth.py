@@ -8,11 +8,7 @@ router = APIRouter()
 pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def hash_password(password: str) -> str:
-    return pwd.hash(password)
-
-
-def verify_password(plain: str, hashed: str) -> bool:
+def verify_password(plain, hashed):
     return pwd.verify(plain, hashed)
 
 
@@ -31,8 +27,7 @@ def register_user(
     email: str = Form(...),
     password: str = Form(...)
 ):
-    old = user_collection.find_one({"email": email})
-    if old:
+    if user_collection.find_one({"email": email}):
         return request.app.state.templates.TemplateResponse(
             "register.html",
             {"request": request, "error": "Email already exists"}
@@ -41,7 +36,7 @@ def register_user(
     user_collection.insert_one({
         "name": name,
         "email": email,
-        "password": hash_password(password),
+        "password": pwd.hash(password),
         "role": "user"
     })
 
@@ -63,17 +58,22 @@ def login_user(
     password: str = Form(...)
 ):
     user = user_collection.find_one({"email": email})
+
     if not user or not verify_password(password, user["password"]):
         return request.app.state.templates.TemplateResponse(
             "login.html",
-            {"request": request, "error": "Invalid email or password"}
+            {"request": request, "error": "Invalid credentials"}
         )
 
-    # session
+    # store session
     request.session["user_email"] = user["email"]
-    request.session["role"] = user.get("role", "user")
+    request.session["role"] = user["role"]
 
-    return RedirectResponse("/dashboard", status_code=303)
+    # redirect based on role
+    if user["role"] == "admin":
+        return RedirectResponse("/admin/dashboard", status_code=303)
+    else:
+        return RedirectResponse("/dashboard", status_code=303)
 
 
 @router.get("/logout")

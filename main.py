@@ -14,15 +14,12 @@ load_dotenv()
 
 app = FastAPI()
 
-# templates
 templates = Jinja2Templates(directory="templates")
 app.state.templates = templates
 
-# sessions secret key from .env
-SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret")
+SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-# routers
 app.include_router(auth_router)
 app.include_router(notes_router)
 
@@ -31,18 +28,16 @@ pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @app.on_event("startup")
 def create_default_admin():
-    email = os.getenv("DEFAULT_ADMIN_EMAIL")
-    password = os.getenv("DEFAULT_ADMIN_PASSWORD")
+    admin_email = os.getenv("DEFAULT_ADMIN_EMAIL")
+    admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD")
 
-    if not email or not password:
-        return
+    admin = user_collection.find_one({"email": admin_email})
 
-    admin = user_collection.find_one({"email": email})
     if not admin:
         user_collection.insert_one({
             "name": "Admin",
-            "email": email,
-            "password": pwd.hash(password),
+            "email": admin_email,
+            "password": pwd.hash(admin_password),
             "role": "admin"
         })
 
