@@ -1,7 +1,8 @@
 
 from pymongo import MongoClient
+import os
 
-MONGO_URL = "mongodb+srv://deepa:deepa123@cluster0.ppja1aq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_URL = 
 
 client = MongoClient(MONGO_URL)
 db = client["NotesDB"]
